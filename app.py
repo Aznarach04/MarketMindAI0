@@ -1,17 +1,12 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import openai
+import os
 
 app = Flask(__name__)
-CORS(app)  # 🔹 Autoriser les requêtes du frontend
 
 openai.api_key = "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"
 
-@app.route("/", methods=["GET"])  # 🔹 Vérification du serveur
-def home():
-    return "API en ligne 🚀", 200
-
-@app.route("/simulate", methods=["POST"])  # 🔹 Assure-toi que "POST" est bien spécifié ici
+@app.route("/simulate", methods=["POST"])
 def simulate():
     data = request.get_json()
     product_description = data.get("product_description", "").strip()
@@ -23,15 +18,16 @@ def simulate():
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "Tu es un expert en études de marché."},
-                {"role": "user", "content": product_description}
+                {"role": "system", "content": "Tu es un expert en études de marché et en psychologie du consommateur."},
+                {"role": "user", "content": product_description},
             ]
         )
         result = response["choices"][0]["message"]["content"]
-        return jsonify({"market_analysis": result})
-
     except Exception as e:
-        return jsonify({"error": f"Erreur OpenAI : {str(e)}"}), 500
+        return jsonify({"error": f"Erreur OpenAI: {str(e)}"}), 500
+
+    return jsonify({"market_analysis": result})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=5000)
+
