@@ -43,13 +43,16 @@ def simulate_market(product_description):
     - Suggestions d'amélioration pour maximiser les ventes
     """
     
+    try:def simulate_market(product_description):
+    messages = [
+        {"role": "system", "content": "Tu es un expert en études de marché."},
+        {"role": "user", "content": f"Analyse ce produit : {product_description}"}
+    ]
+
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
-            messages=[
-                {"role": "system", "content": "Tu es un expert en études de marché et en psychologie du consommateur."},
-                {"role": "user", "content": prompt}
-            ]
+            messages=messages
         )
         return response["choices"][0]["message"]["content"]
     except Exception as e:
