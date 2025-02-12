@@ -3,15 +3,15 @@ from flask_cors import CORS
 import openai
 
 app = Flask(__name__)
-CORS(app)  # Autoriser les requêtes du frontend
+CORS(app)  # 🔹 Autoriser les requêtes du frontend
 
 openai.api_key = "TON_API_KEY_OPENAI"
 
-@app.route("/", methods=["GET"])  # 🔹 Ajoute cette route pour tester
+@app.route("/", methods=["GET"])  # 🔹 Vérification du serveur
 def home():
     return "API en ligne 🚀", 200
 
-@app.route("/simulate", methods=["POST"])
+@app.route("/simulate", methods=["POST"])  # 🔹 Assure-toi que "POST" est bien spécifié ici
 def simulate():
     data = request.get_json()
     product_description = data.get("product_description", "").strip()
