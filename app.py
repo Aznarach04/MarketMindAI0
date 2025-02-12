@@ -7,6 +7,10 @@ CORS(app)  # Autoriser les requêtes du frontend
 
 openai.api_key = "TON_API_KEY_OPENAI"
 
+@app.route("/", methods=["GET"])  # 🔹 Ajoute cette route pour tester
+def home():
+    return "API en ligne 🚀", 200
+
 @app.route("/simulate", methods=["POST"])
 def simulate():
     data = request.get_json()
