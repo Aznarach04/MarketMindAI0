@@ -5,7 +5,7 @@ import openai
 app = Flask(__name__)
 CORS(app)  # 🔹 Autoriser les requêtes du frontend
 
-openai.api_key = "TON_API_KEY_OPENAI"
+openai.api_key = "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"
 
 @app.route("/", methods=["GET"])  # 🔹 Vérification du serveur
 def home():
