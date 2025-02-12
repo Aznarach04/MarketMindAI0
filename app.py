@@ -4,7 +4,9 @@ import os
 
 app = Flask(__name__)
 
-openai.api_key = "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"
+import os
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 @app.route("/simulate", methods=["POST"])
 def simulate():
