@@ -43,8 +43,9 @@ def simulate_market(product_description):
     - Suggestions d'amélioration pour maximiser les ventes
     """
     
-    try:def simulate_market(product_description):
-    messages = [
+  def simulate_market(product_description):
+    try:
+messages = [
         {"role": "system", "content": "Tu es un expert en études de marché."},
         {"role": "user", "content": f"Analyse ce produit : {product_description}"}
     ]
@@ -55,6 +56,7 @@ def simulate_market(product_description):
             messages=messages
         )
         return response["choices"][0]["message"]["content"]
+        
     except Exception as e:
         logging.error(f"Erreur OpenAI: {str(e)}")
         return f"Erreur lors de la génération de l'analyse : {str(e)}"
