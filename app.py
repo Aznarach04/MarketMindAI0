@@ -2,7 +2,7 @@ import openai
 import json
 import requests
 import sqlite3
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
 import os
@@ -25,7 +25,6 @@ cursor.execute("""
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_description TEXT,
         market_analysis TEXT,
-        image_path TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
 """)
@@ -33,30 +32,18 @@ conn.commit()
 
 # Fonction pour générer un test de marché simulé
 def simulate_market(product_description):
-    prompt = f"""
-    Simule un groupe de consommateurs types réagissant à un produit :
-    Produit : {product_description}
-    Donne une analyse des réactions des consommateurs sur :
-    - L'intérêt du marché
-    - Les objections courantes
-    - La probabilité d'achat
-    - Suggestions d'amélioration pour maximiser les ventes
-    """
-    
-  def simulate_market(product_description):
     try:
-messages = [
-        {"role": "system", "content": "Tu es un expert en études de marché."},
-        {"role": "user", "content": f"Analyse ce produit : {product_description}"}
-    ]
+        messages = [
+            {"role": "system", "content": "Tu es un expert en études de marché."},
+            {"role": "user", "content": f"Analyse ce produit : {product_description}"}
+        ]
 
-    try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=messages
         )
         return response["choices"][0]["message"]["content"]
-        
+
     except Exception as e:
         logging.error(f"Erreur OpenAI: {str(e)}")
         return f"Erreur lors de la génération de l'analyse : {str(e)}"
@@ -66,15 +53,17 @@ messages = [
 def simulate():
     data = request.get_json()
     product_description = data.get("product_description", "").strip()
+
     if not product_description:
         return jsonify({"error": "Veuillez fournir une description du produit"}), 400
-    
+
     result = simulate_market(product_description)
-    
+
     # Stocker le résultat dans la base de données
-    cursor.execute("INSERT INTO market_tests (product_description, market_analysis) VALUES (?, ?)", (product_description, result))
+    cursor.execute("INSERT INTO market_tests (product_description, market_analysis) VALUES (?, ?)", 
+                   (product_description, result))
     conn.commit()
-    
+
     return jsonify({"market_analysis": result})
 
 # Route API pour récupérer les analyses stockées
@@ -90,21 +79,6 @@ def get_history():
 def ping():
     return jsonify({"message": "Le serveur est opérationnel."})
 
-# Gestion de l'upload d'images
-UPLOAD_FOLDER = "uploads"
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-@app.route("/upload", methods=["POST"])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "Aucun fichier fourni"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "Aucun fichier sélectionné"}), 400
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-    file.save(filepath)
-    return jsonify({"message": "Fichier uploadé avec succès", "file_path": filepath})
-
+# Démarrage de l'application Flask
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
