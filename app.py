@@ -1,53 +1,36 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import openai
 import os
 
 app = Flask(__name__)
-CORS(app)
 
-app.config["DEBUG"] = True
-
-# ✅ Vérification de la clé API
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    print("⚠️ ERREUR: Clé API OpenAI absente ! Ajoutez-la dans Render.")
-else:
-    openai.api_key = api_key
+# Configuration de l'API Key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({"message": "Bienvenue sur MarketMindAI API"})
 
 @app.route("/simulate", methods=["POST"])
-def simulate():
+def simulate_market():
+    data = request.get_json()
+
+    if not data or "product_description" not in data:
+        return jsonify({"error": "Product description missing"}), 400
+
     try:
-        data = request.get_json()
-        print(f"📩 Requête reçue: {data}")  
-
-        if not data or "product_description" not in data:
-            return jsonify({"error": "❌ 'product_description' est manquant"}), 400
-
-        product_description = data["product_description"].strip()
-        if not product_description:
-            return jsonify({"error": "❌ Description vide"}), 400
-
-        # ✅ Test OpenAI
         response = openai.ChatCompletion.create(
-            model="gpt-4",
+            model="gpt-4o",  # Remplace par un modèle supporté, ex: gpt-4, gpt-3.5-turbo
             messages=[
-                {"role": "system", "content": "Tu es un expert en études de marché."},
-                {"role": "user", "content": product_description}
+                {"role": "system", "content": "Tu es un expert en analyse de marché."},
+                {"role": "user", "content": f"Analyse ce produit : {data['product_description']}"}
             ]
         )
 
-        result = response["choices"][0]["message"]["content"]
-        print(f"✅ Réponse OpenAI: {result}")
+        analysis_result = response["choices"][0]["message"]["content"]
+        return jsonify({"prediction": analysis_result})
 
-        return jsonify({"market_analysis": result})
-
-    except Exception as e:
-        print(f"🔥 ERREUR SERVEUR: {str(e)}")  
+    except openai.OpenAIError as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
