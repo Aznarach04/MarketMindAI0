@@ -1,6 +1,7 @@
 flask
 flask-cors
-openai
+openai==1.62.0
 requests
 gunicorn
 uvicorn
+
