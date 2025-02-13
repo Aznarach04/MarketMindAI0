@@ -3,50 +3,38 @@ from flask_cors import CORS
 import openai
 import os
 
-# Initialiser l'application Flask
 app = Flask(__name__)
-CORS(app)  # Autoriser les requêtes depuis le frontend
+CORS(app)
 
-# Vérifier et charger la clé API OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
-if not openai.api_key:
-    raise ValueError("La clé API OpenAI est manquante. Configurez-la dans les variables d'environnement.")
+openai.api_key = os.getenv("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")
 
 @app.route("/", methods=["GET"])
 def home():
-    """Route d'accueil pour vérifier que l'API est en ligne"""
-    return "Bienvenue sur MarketMindAI Backend", 200
+    return jsonify({"message": "Bienvenue sur MarketMindAI API"})
 
 @app.route("/simulate", methods=["POST"])
-def simulate():
-    """Route pour analyser un produit via OpenAI"""
+def simulate_market():
     try:
-        # Récupérer les données envoyées en JSON
         data = request.get_json()
         product_description = data.get("product_description", "").strip()
 
-        # Vérifier si la description est bien fournie
         if not product_description:
             return jsonify({"error": "Veuillez fournir une description du produit"}), 400
 
-        # Envoyer la requête à OpenAI
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "Tu es un expert en études de marché et en psychologie du consommateur."},
-                {"role": "user", "content": product_description},
+                {"role": "user", "content": product_description}
             ]
         )
 
-        # Extraire et retourner le résultat
         result = response["choices"][0]["message"]["content"]
         return jsonify({"market_analysis": result})
 
     except Exception as e:
-        return jsonify({"error": f"Erreur lors de l'analyse du marché : {str(e)}"}), 500
+        return jsonify({"error": f"Erreur lors de la génération de l'analyse : {str(e)}"}), 500
 
-# Définir le port correctement pour Render
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Render utilise 5000 par défaut
-    app.run(host="0.0.0.0", port=port)
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
